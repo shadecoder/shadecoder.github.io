@@ -1,0 +1,252 @@
+*{
+    font-family: 'Gill Sans', sans-serif;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    box-sizing:border-box;
+    white-space: nowrap;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+body{
+    background: #333;
+}
+
+ul{
+    margin-bottom: 30px;
+}
+
+h1{
+    text-align: center;
+};
+
+
+ul li h3{
+    margin-left: 20px;
+}
+
+.main{
+    width: 650px;
+    margin: 30px auto;
+    color: #f1f1f1;
+    background-color: #444555;
+    padding: 30px;
+}
+ul li{
+    margin-bottom: 10px;
+}
+.bar{
+    position: relative;
+    display: inline-block;
+    margin: 0 10px;
+    width: 440px;
+    background-color: #353b48;
+    height: 30px;
+    overflow: hidden;
+}
+
+.time-remaining{
+    color: #333;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    font-size: 24px; 
+}
+
+.harvest-timer .bar{
+    background-color: #c3dfcd;
+}
+
+.operations-timer .bar{
+    background-color: #e8baba;
+}
+
+.dispatch-timer .bar{
+    background-color: #bad2e8;
+}
+
+.harvest-timer .bar span{
+    background-color: #7fd49f;
+}
+
+.operations-timer .bar span{
+    background-color: #ee6666;
+}
+
+.dispatch-timer .bar span{
+    background-color: #66adee;
+}
+
+.button{
+    display: inline-block;
+    height: 30px;
+    background-color:#292933;
+    width: 30px;
+    overflow: hidden;
+    text-align: center;
+    line-height: 30px;
+    cursor:pointer;
+}
+
+.timer .button{
+    font-size: 24px;
+    color: #f1f1f1;
+}
+
+.delete{
+    color: #000;
+    margin-left: 40px
+}
+
+.bar span{
+    height: 30px;
+    float: left;
+    /*background: linear-gradient(135deg, #1E9AFE, #60DFCD);*/
+    background-color: #d9d9d9;
+}
+
+.control-panel-section{
+    overflow: hidden;
+}
+
+.control-panel{
+    font-size: 12px;
+    color: #f1f1f1;
+    display: inline-block;
+    height: 110px;
+    background-color: #292933;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.control-panel-enveloper{
+    padding: 16px;
+}
+
+.green{
+    border-top: 2px solid #7FD49F;
+}
+
+.red{
+    border-top: 2px solid #EE6666;
+}
+
+.blue{
+    border-top: 2px solid #66ADEE;
+}
+
+.control-panel h3{
+    text-align: center;
+}
+
+.buttons{
+    margin-bottom: 16px;
+}
+
+.buttons .button:not(:first-child){
+    margin-left: 6px;
+}
+
+.control-panel .button{
+background-color: transparent;
+}
+
+.harvest{
+    width: 190px;
+}
+
+.operations{
+    margin: 0 6px;
+    width: 150px;
+}
+
+.dispatch{
+    width: 230px;
+}
+
+.dispatch .button{
+    font-size: 24px;
+    line-height: 24px;
+    border: 2px solid #f1f1f1;
+}
+
+.dispatch > div > div{
+    display: inline-block;
+    text-align: center;
+}
+
+.dispatch-functions{
+    width: 100px;
+    overflow: hidden;
+}
+
+.dispatch-selector{
+    margin-bottom: 7px;
+}
+
+.dispatch-selector > div{
+    display: inline-block;
+}
+
+.dispatch-selector .selector{
+    font-size: 16px;
+    line-height: 30px;
+    font-weight: bold;
+    width: 33px;
+    height: 30px;
+    overflow: hidden;
+}
+
+.dispatch-display{
+    width: 100px;
+    height: 30px;
+    border: 3px solid #999;
+    font-size: 16px;
+    font-weight: bold;
+    color: #999;
+    line-height: 25px;
+}
+
+.dispatch-btn{
+    border: 2px solid #f1f1f1;
+    line-height: 65px;
+    margin-left: 6px;
+    width: 80px;
+    height: 70px;
+    overflow: hidden;
+}
+
+.harvest-btn{
+    position: relative;
+}
+
+.harvest-btn span {
+    font-weight: bold;
+    text-transform: uppercase;
+    position: absolute;
+    top: 10px;
+    right: 0;
+}
+
+.btn-text {
+    font-size: 12px;
+    font-weight: bold;
+    fill: f1f1f1;
+  }
+  
+  .svgText {
+    position: absolute;
+    font-weight: bold;
+    fill: #f1f1f1;
+    stroke: #292933;
+    stroke-width: 6px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+  }
