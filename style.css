@@ -132,6 +132,29 @@ ul li{
 
 .green{
     border-top: 2px solid #7FD49F;
+    position: relative;
+}
+
+.watering{
+    position: absolute;
+    right: 14px;
+    bottom: 6px;
+    cursor:pointer;
+}
+
+.watering:hover path{
+    stroke: #d9d9d9;
+    transition: stroke 0.3s ease;
+}
+
+.watering-on path{
+    stroke: #F1F1F1;
+    fill: #66ADEE;
+}
+
+.watering-off path{
+    stroke: #5B5C71;
+    fill: #444555;
 }
 
 .red{
@@ -220,7 +243,14 @@ background-color: transparent;
     margin-left: 6px;
     width: 80px;
     height: 70px;
+    cursor: pointer;
     overflow: hidden;
+}
+
+.selector-decrement:hover, .selector-increment:hover, .dispatch-btn:hover{
+    color: #292933;
+    background-color: #f1f1f1;
+    transition: 0.3s ease;
 }
 
 .harvest-btn{
@@ -233,6 +263,16 @@ background-color: transparent;
     position: absolute;
     top: 10px;
     right: 0;
+}
+
+.harvest-btn:hover .svgHoursSection{
+    fill: #c3dfcd;
+    transition: fill 0.3s ease;
+}
+
+.operations-btn:hover .svgHoursSection{
+    fill: #e8baba;
+    transition: fill 0.3s ease;
 }
 
 .btn-text {

@@ -211,5 +211,34 @@ addEventListenersToButtons(".harvest-btn");
 addEventListenersToButtons(".operations-btn");
 addEventListenersToButtons(".dispatch-btn")
 
+const wateringButton = document.querySelector(".watering")
+const waterableButtons = Array.from(document.querySelectorAll(".harvest-btn")).slice(0, 2)
+
+let isWateringOn = false;
+
+// Function to update the watering button state
+function updateWateringButtonState() {
+    isWateringOn = !isWateringOn;
+    wateringButton.classList.toggle('watering-on', isWateringOn);
+    wateringButton.classList.toggle('watering-off', !isWateringOn);
+  }
+
+// Add a click event listener to the "watering" button
+wateringButton.addEventListener('click', () => {
+    // Update the watering button state
+    updateWateringButtonState();
+    waterableButtons.forEach((waterableButton) => {
+        const dataMinutes = waterableButton.getAttribute("data-minutes");
+        const minutesToAdjust = isWateringOn? -30 : 30;
+    
+        // Ensure that dataMinutes is a valid number
+        if (!isNaN(dataMinutes)) {
+            const updatedMinutes = parseInt(dataMinutes, 10) + minutesToAdjust;
+  
+            // Update the data-minutes attribute
+            waterableButton.setAttribute('data-minutes', updatedMinutes);
+        }
+    });
+})
 activeTimers = []
 inactiveTimers = []
