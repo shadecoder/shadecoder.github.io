@@ -1,3 +1,94 @@
+
+let useLocalStorage = true; // Set this to false to disable localStorage
+
+function manipulateTimersInLocalStorage(action, timerData) {
+  if (!useLocalStorage) {
+    return;
+  }
+
+  let timers = getFromLocalStorage("timers");
+
+  if (action === "add") {
+    timers.push(timerData);
+  } else if (action === "edit") {
+    const timerIndex = timers.findIndex((timer) => timer.id === timerData.id);
+    if (timerIndex !== -1) {
+      timers[timerIndex] = timerData;
+    }
+  } else if (action === "delete") {
+    timers = timers.filter((timer) => timer.id !== timerData.id);
+  }
+
+  storeTimersInLocalStorage(timers);
+}
+
+function storeTimersInLocalStorage(timers) {
+  if (useLocalStorage) {
+    localStorage.setItem("timers", JSON.stringify(timers));
+  }
+}
+
+function getFromLocalStorage(key) {
+  if (useLocalStorage) {
+    const storedItems = localStorage.getItem(key);
+    return storedItems ? JSON.parse(storedItems) : [];
+  }
+  return [];
+}
+
+// Initialize timers from localStorage on app load
+function initializeTimersFromLocalStorage() {
+  const timers = getFromLocalStorage("timers");
+  const timerOrder = getFromLocalStorage("timerOrder")
+  const now = Date.now()
+  if (timerOrder) {
+    timerOrder.forEach(timerId => {
+        const timerData = timers.find(timer => timer.id === timerId);
+        if (timerData) {
+            if (timerData.duration > 0) {
+                timerData.duration = timerData.initialDuration - ((now - timerData.creationTime) / 1000);
+                if (timerData.duration <= 0) {
+                    timerData.duration = 1;
+                }
+            }
+          createTimerBar(timerData, false);
+        }
+      });
+    } else { 
+        timers.forEach(timerData => {
+            timerData.duration = timerData.initialDuration - ((now - timerData.creationTime) / 1000);
+            createTimerBar(timerData, false);
+          });
+    }
+}
+
+// Function to update the array of timer IDs
+function updateTimerOrderInLocalStorage() {
+    const timerIds = Array.from(timerList.querySelectorAll("li")).map(li => li.querySelector('.timer').id);
+    localStorage.setItem('timerOrder', JSON.stringify(timerIds));
+}
+
+// Function to get the timer order from local storage
+function getTimerOrderFromLocalStorage() {
+    const timerIds = JSON.parse(localStorage.getItem('timerOrder'));
+    return timerIds || [];
+}
+
+// Initialize the timer order
+let timerOrder = getTimerOrderFromLocalStorage();
+
+
+
+//funcition for responsiveness
+function setScale() {
+    const viewportWidth = window.innerWidth;
+    const scale = viewportWidth < 650 ? (viewportWidth / 650) : 1;
+    document.body.style.transform = `scale(${scale})`;
+  }
+  
+  window.addEventListener('resize', setScale);
+  setScale(); // Call it initially
+
 // Function for the global timer
 let previousTimestamp = null; // Variable to store the previous timestamp 
 
@@ -22,15 +113,23 @@ function globalTimer(timestamp) {
                     if (timer.duration <= 0) {
                         stopTimer(timer);
                         // Move the timer to inactiveTimers
+                        if (timer.html.classList.contains("ending")) {
+                            timer.html.classList.remove("ending");
+                        }
                         const index = activeTimers.findIndex(t => t.id === timer.id);
                         if (index !== -1) {
                             activeTimers.splice(index, 1)
                         }
                         inactiveTimers.push(timer)
+                        manipulateTimersInLocalStorage("edit", timer)
                         startGlobalTimer()
+                    // Check if the timer's duration is less than or equal to x minutes
+                    } else if (timer.duration <= 50 && !timer.html.classList.contains("ending")) {
+                        timer.html.classList.add("ending")
                     }
                 // Update the timer display
                 updateTimerDisplay(timer);
+
             }
             // Store the current timestamp as the previous timestamp for the next frame
             previousTimestamp = timestamp;
@@ -44,6 +143,25 @@ function globalTimer(timestamp) {
 // Initialize the global timer
 let globalTimerRunning = false; // Variable to track whether the global timer is running
 const timerList = document.querySelector("ul");
+
+const initSortableList = (e) => {
+    e.preventDefault();
+    const draggedTimer = timerList.querySelector(".dragging")
+    //Getting all items except currently dragging and making an array with them
+    const siblings = [...timerList.querySelectorAll("li:not(.dragging)")]
+
+    //Finding closest sibling to insert before
+    let closestNextSibling = siblings.find(sibling => {
+        return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+    })
+
+    // Inserting the dragged timer before the closestNextSibling
+    timerList.insertBefore(draggedTimer, closestNextSibling)
+    updateTimerOrderInLocalStorage()
+}
+
+timerList.addEventListener("dragover", initSortableList)
+timerList.addEventListener("dragenter", e => e.preventDefault())
 
 // Function to start or stop the global timer
 function startGlobalTimer() {
@@ -87,27 +205,42 @@ function formatTime(totalSeconds) {
 
     return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
+//////GROUPS
+// Define the possible timer group values
+const timerGroups = [1, 2, 3];
 
+// Initialize the current group index
+let currentGroupNumber = 1;
 
-function createTimerBar(duration, timerClass) {
+//dragging 
+let dragging = false
+
+function createTimer(duration, timerClass) {
     const timestamp = Date.now();
     const timerId = `timer_${timestamp}`;
-
-    //Create the timer object
+  
     const timer = {
-        id: timerId,
-        duration: duration,
-        initialDuration: duration,
-        remainingTimeElement: null, // Initialize it to null
-        progressBar: null // Initialize it to null
-    }
+      id: timerId,
+      group: currentGroupNumber,
+      class: timerClass,
+      duration: duration,
+      initialDuration: duration,
+      creationTime: timestamp,
+      remainingTimeElement: null,
+      progressBar: null,
+      html: null,
+    };
+    return timer;
+  }
+
+function createTimerBar(timer, newTimer) {
 
     // Create the timer bar HTML
     const timerBar = document.createElement("div");
-    timerBar.classList.add("timer", timerClass);
-    timerBar.id = timerId;
+    timerBar.classList.add("timer", timer.class);
+    timerBar.id = timer.id;
     //
-    timerBar.innerHTML = `<div class="button decrementTime">-</div><div class="bar"><div class="time-remaining">${formatTime(timer.duration)}</div><span></span></div><div class="button increment-time">+</div><div class="button delete">×</div>`;
+    timerBar.innerHTML = `<div class="button decrementTime">-</div><div class="bar"><div class="time-remaining">${formatTime(timer.duration)}</div><span></span></div><div class="button increment-time">+</div><div class="button timer-group"><span>${timer.group}</span></div><div class="button delete">×</div>`;
 
     //Store a reference to the .time-remaining element
     timer.remainingTimeElement = timerBar.querySelector(".time-remaining");
@@ -115,28 +248,79 @@ function createTimerBar(duration, timerClass) {
     //Store a reference to the progress bar
     timer.progressBar = timerBar.querySelector("span")
     timer.progressBar.style.width = `100%`
+    
+
+    //Set the timer's html property to the timerBar
+    timer.html = timerBar;
     // Append the timer bar to the list
     const li = document.createElement("li");
+    //li.draggable = true;
+    li.addEventListener("dragstart", () => {
+        dragging = true
+        setTimeout(() => li.classList.add("dragging"), 0)
+    })
+    li.addEventListener("dragend", () => {
+        dragging = false
+        li.classList.remove("dragging")
+    })
     li.appendChild(timerBar);
+
+    const bar = timerBar.querySelector(".bar")
+    bar.addEventListener("mouseover", (e) => {
+        if (!dragging) {
+            li.draggable = true;
+        }
+    })
+    bar.addEventListener("mouseout", (e) => {
+        if (!dragging && !li.classList.contains("dragging")) {
+            li.draggable = false
+        }
+    })
+
+
     timerList.appendChild(li);
 
+    const groupNumber = timerBar.querySelector(".timer-group span");
     // Add event listeners for the buttons
     //const decrementTimeButton = timerBar.querySelector(".decrement-time");
     //const incrementTimeButton = timerBar.querySelector(".increment-time");
+    // Add event listeners for the buttons
+    timerBar.querySelector(".timer-group").addEventListener("click", () => {
+        const timerGroupNumber = parseInt(timer.group, 10);
+        timer.group = (timerGroupNumber % 3) + 1;
+        groupNumber.textContent = timer.group;
+        currentGroupNumber = timer.group;
+        manipulateTimersInLocalStorage("edit", timer)
+    });
+
     const deleteButton = timerBar.querySelector(".delete");
     deleteButton.addEventListener("click", () => {
         // Handle delete button click
         li.remove(); // Remove the entire timer bar
         // Remove the timer from activeTimers
-        const index = activeTimers.findIndex(timer => timer.id === timerId);
+        let index = activeTimers.findIndex(timer => timer.id === timer.id);
         if (index !== -1) {
             activeTimers.splice(index, 1);
+        } else if (index === -1) {
+            index = inactiveTimers.findIndex(timer => timer.id === timer.id);
+            if (index !== -1) {
+                inactiveTimers.splice(index, 1)
+            }
         }
+
+        manipulateTimersInLocalStorage('delete', timer)
+        updateTimerOrderInLocalStorage()
         startGlobalTimer();
     });
 
     // Add the timer to activeTimers
     activeTimers.push(timer);
+
+    // Add the timer to localStorage
+    if (newTimer) {
+        manipulateTimersInLocalStorage('add', timer)
+        updateTimerOrderInLocalStorage()
+    }
 
     // Start the global timer if it's not running
     startGlobalTimer();
@@ -167,7 +351,8 @@ function addEventListenersToButtons(buttonSelector) {
             const dataMinutes = clickedButton.getAttribute("data-minutes"); // Fetch data-minutes attribute
             const duration = parseInt(dataMinutes, 10) * 60; // Convert to integer
             if (!isNaN(duration)) {
-                createTimerBar(duration, timerGroup); // Create a timer bar with the extracted duration
+                const timerData = createTimer(duration, timerGroup); // Create a timer with the extracted duration
+                createTimerBar(timerData, true); // Create a timer bar with the extracted duration
             }
         });
     });
@@ -200,7 +385,7 @@ selectorDecrement.addEventListener("click", () => {
 })
 
 selectorIncrement.addEventListener("click", () => {
-    if (currentSelectorValue < 13) {
+    if (currentSelectorValue < 30) {
         currentSelectorValue++;
         updateDispatch()
     }
@@ -240,5 +425,25 @@ wateringButton.addEventListener('click', () => {
         }
     });
 })
+
+const arrow = document.querySelector(".arrow")
+const arrowButton = document.querySelector(".arrow-button")
+const groupsPanel = document.querySelector(".groups-panel-content")
+
+
+arrowButton.addEventListener("click", () => {
+    toggleGroupsPanel()
+})
+
+
+function toggleGroupsPanel() {
+    //panelContent.classList.toggle('show');
+    arrow.classList.toggle('expanded');
+    groupsPanel.classList.toggle('show');
+}
+
 activeTimers = []
 inactiveTimers = []
+
+
+initializeTimersFromLocalStorage()

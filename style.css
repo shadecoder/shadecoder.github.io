@@ -32,7 +32,7 @@ ul li h3{
 
 .main{
     width: 650px;
-    margin: 30px auto;
+    margin: auto;
     color: #f1f1f1;
     background-color: #444555;
     padding: 30px;
@@ -40,14 +40,20 @@ ul li h3{
 ul li{
     margin-bottom: 10px;
 }
+
+.dragging {
+    opacity: 0;
+}
+
 .bar{
     position: relative;
     display: inline-block;
     margin: 0 10px;
-    width: 440px;
+    width: 390px;
     background-color: #353b48;
     height: 30px;
     overflow: hidden;
+    cursor: grab;
 }
 
 .time-remaining{
@@ -76,13 +82,39 @@ ul li{
     background-color: #7fd49f;
 }
 
+.harvest-timer.ending .bar{
+    animation: harvest-flash 1s infinite;
+}
+
+.harvest-timer.ending .bar span{
+    animation: harvest-flash-remaining 1s infinite;
+}
+
 .operations-timer .bar span{
     background-color: #ee6666;
+}
+
+.operations-timer.ending .bar span{
+    animation: operations-flash-remaining 1s infinite;
+}
+
+.operations-timer.ending .bar{
+    animation: operations-flash 1s infinite;
 }
 
 .dispatch-timer .bar span{
     background-color: #66adee;
 }
+
+.dispatch-timer.ending .bar span{
+    animation: dispatch-flash-remaining 1s infinite;
+}
+
+.dispatch-timer.ending .bar{
+    animation: dispatch-flash 1s infinite;
+}
+
+
 
 .button{
     display: inline-block;
@@ -98,6 +130,10 @@ ul li{
 .timer .button{
     font-size: 24px;
     color: #f1f1f1;
+}
+
+.timer .timer-group{
+    margin-left: 10px;
 }
 
 .delete{
@@ -163,6 +199,10 @@ ul li{
 
 .blue{
     border-top: 2px solid #66ADEE;
+}
+
+.violet{
+    border-top: 2px solid #9063E3;
 }
 
 .control-panel h3{
@@ -279,9 +319,9 @@ background-color: transparent;
     font-size: 12px;
     font-weight: bold;
     fill: f1f1f1;
-  }
+}
   
-  .svgText {
+.svgText {
     position: absolute;
     font-weight: bold;
     fill: #f1f1f1;
@@ -289,4 +329,135 @@ background-color: transparent;
     stroke-width: 6px;
     stroke-linejoin: round;
     paint-order: stroke;
+}
+
+.groups-panel {
+    margin-top: 6px;
+    width: 100%;
+    height: auto;
+    position: relative;
+}
+
+.groups-panel-content {
+    color: transparent;
+    height: 0;
+    overflow: hidden;
+    transition: height 150ms ease-in-out;
+}
+
+.groups-panel-content.show {
+    height: 100px;
+  }
+
+.groups-panel .control-panel-enveloper {
+    padding-top: 3px;
+    padding-bottom: 0px;
+}
+
+.arrow-button {
+    position: relative;
+    height: 15px;
+}
+
+.arrow {
+    position: absolute;
+    box-sizing: border-box;
+    height: 10px;
+    width: 10px;
+    border-style: solid;
+    border-color: white;
+    border-width: 0px 2px 2px 0px;
+    transform: rotate(45deg);
+    left: 50%;
+    transition: transform 150ms ease-in-out, margin-top 150ms ease-in-out;
+    padding: 2px;
+}
+
+.arrow.expanded {
+    transform: rotate(-135deg);
+    margin-top: 5px;
+}
+
+@keyframes harvest-flash {
+    0% {
+        background: #bad2e8;
+    }
+    50% {
+        background: #EBDFC2; /* Flash to a noticeable background color */
+    }
+    100% {
+        background: #bad2e8;
+    }
+}
+
+@keyframes harvest-flash-remaining {
+    0% {
+        background: #7FD49F;
+    }
+    50% {
+        background: #F6CC5D; /* Flash to a noticeable background color */
+    }
+    100% {
+        background: #7FD49F;
+    }
+}
+
+@keyframes operations-flash {
+    0% {
+        background: #e8baba;
+    }
+    50% {
+        background: #EBDFC2; /* Flash to a noticeable background color */
+    }
+    100% {
+        background: #e8baba;
+    }
+}
+
+@keyframes operations-flash-remaining {
+    0% {
+        background: #ee6666;
+    }
+    50% {
+        background: #F6CC5D;
+    }
+    100% {
+        background: #ee6666;
+    }
+}
+
+@keyframes dispatch-flash {
+    0% {
+        background: #bad2e8;
+    }
+    50% {
+        background: #EBDFC2;
+    }
+    100% {
+        background: #bad2e8;
+    }
+}
+
+@keyframes dispatch-flash-remaining {
+    0% {
+        background: #66ADEE;
+    }
+    50% {
+        background: #F6CC5D; /* Flash to a noticeable background color */
+    }
+    100% {
+        background: #66ADEE;
+    }
+}
+
+
+@media (max-width: 650px) {
+    body {
+        width: 0;
+        height: 0;
+    }
+    
+    .main {
+        margin: auto;
+    }
   }
