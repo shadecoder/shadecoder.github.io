@@ -47,6 +47,9 @@ function initializeTimersFromLocalStorage() {
         if (timerData) {
             if (timerData.duration > 0) {
                 timerData.duration = timerData.initialDuration - ((now - timerData.creationTime) / 1000);
+                if (timerData.modifier) {
+                    timerData.duration += timerData.modifier * 5 * 60
+                }
                 if (timerData.duration <= 0) {
                     timerData.duration = 1;
                 }
@@ -124,7 +127,7 @@ function globalTimer(timestamp) {
                         manipulateTimersInLocalStorage("edit", timer)
                         startGlobalTimer()
                     // Check if the timer's duration is less than or equal to x minutes
-                    } else if (timer.duration <= 50 && !timer.html.classList.contains("ending")) {
+                    } else if (timer.duration <= 300 && !timer.html.classList.contains("ending")) {
                         timer.html.classList.add("ending")
                     }
                 // Update the timer display
@@ -181,7 +184,7 @@ function updateTimerDisplay(timer) {
     if (timer.remainingTimeElement) {
         timer.remainingTimeElement.textContent = formatTime(timer.duration);
         const progressRatio = timer.duration / timer.initialDuration
-        timer.progressBar.style.width = `${progressRatio * 100}%`
+        timer.progressBar.style.width = `${Math.min(progressRatio * 100, 100)}%`
     }
 }
 
@@ -224,6 +227,7 @@ function createTimer(duration, timerClass) {
       group: currentGroupNumber,
       class: timerClass,
       duration: duration,
+      modifier: 0,
       initialDuration: duration,
       creationTime: timestamp,
       remainingTimeElement: null,
@@ -231,7 +235,14 @@ function createTimer(duration, timerClass) {
       html: null,
     };
     return timer;
-  }
+}
+
+const refreshIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+<path d="M23.1186 11.9054L21.6243 6.32861L17.5418 10.4111L23.1186 11.9054Z" fill="#F1F1F1"/>
+<path d="M7.01318 18.2L8.50747 23.7768L12.59 19.6943L7.01318 18.2Z" fill="#F1F1F1"/>
+<path d="M20.67 9.34315C19.4754 8.14854 17.9333 7.36279 16.2647 7.0985C14.596 6.83422 12.8866 7.10497 11.3813 7.87196C9.87597 8.63894 8.65213 9.86279 7.88514 11.3681C7.11815 12.8734 6.8474 14.5829 7.11169 16.2515" stroke="#F1F1F1" stroke-width="2"/>
+<path d="M9.35632 20.6569C10.5509 21.8515 12.0931 22.6372 13.7617 22.9015C15.4303 23.1658 17.1398 22.895 18.6451 22.1281C20.1504 21.3611 21.3742 20.1372 22.1412 18.6319C22.9082 17.1266 23.179 15.4172 22.9147 13.7485" stroke="#F1F1F1" stroke-width="2"/>
+</svg>`
 
 function createTimerBar(timer, newTimer) {
 
@@ -240,7 +251,7 @@ function createTimerBar(timer, newTimer) {
     timerBar.classList.add("timer", timer.class);
     timerBar.id = timer.id;
     //
-    timerBar.innerHTML = `<div class="button decrementTime">-</div><div class="bar"><div class="time-remaining">${formatTime(timer.duration)}</div><span></span></div><div class="button increment-time">+</div><div class="button timer-group"><span>${timer.group}</span></div><div class="button delete">×</div>`;
+    timerBar.innerHTML = `<div class="button refresh-timer">${refreshIcon}</div><div class="bar"><div class="bar-content"><div class="button decrement-time">-</div><div class="time-remaining">${formatTime(timer.duration)}</div><div class="button increment-time">+</div></div><span></span></div></div><div class="button timer-group"><span>${timer.group}</span></div><div class="button delete">×</div>`;
 
     //Store a reference to the .time-remaining element
     timer.remainingTimeElement = timerBar.querySelector(".time-remaining");
@@ -280,10 +291,57 @@ function createTimerBar(timer, newTimer) {
 
     timerList.appendChild(li);
 
+
+    const refreshButton = timerBar.querySelector(".refresh-timer");
+    refreshButton.addEventListener("click", () => {
+        timer.creationTime = Date.now();
+        timer.duration = timer.initialDuration
+        timer.modifier = 0
+        // Check if the timer is in the inactiveTimers list
+        if (inactiveTimers.some((t) => t.id === timer.id)) {
+            // Remove it from the inactiveTimers list
+            inactiveTimers = inactiveTimers.filter((t) => t.id !== timer.id);
+            // Add it to the activeTimers list
+            activeTimers.push(timer);
+        }
+        manipulateTimersInLocalStorage("edit", timer)
+        updateTimerDisplay(timer)
+        startGlobalTimer()
+
+    })
+
     const groupNumber = timerBar.querySelector(".timer-group span");
     // Add event listeners for the buttons
-    //const decrementTimeButton = timerBar.querySelector(".decrement-time");
-    //const incrementTimeButton = timerBar.querySelector(".increment-time");
+    const decrementTimeButton = timerBar.querySelector(".decrement-time");
+        decrementTimeButton.addEventListener("click", () => {
+            if(timer.duration > 0) {
+                timer.duration -= 5 * 60; // Decrease by 5 minutes
+                timer.modifier--
+                if (timer.duration < 0) {
+                    timer.duration = 0
+                }
+                manipulateTimersInLocalStorage("edit", timer)
+                updateTimerDisplay(timer)
+            }
+        })
+    const incrementTimeButton = timerBar.querySelector(".increment-time");
+        incrementTimeButton.addEventListener("click", () => {
+            timer.duration += 5 * 60 // Increase by 5 minutes
+            timer.modifier++
+            // Check if the timer is in the inactiveTimers list
+            if (inactiveTimers.some((t) => t.id === timer.id)) {
+                // Remove it from the inactiveTimers list
+                inactiveTimers = inactiveTimers.filter((t) => t.id !== timer.id);
+                // Add it to the activeTimers list
+                activeTimers.push(timer);
+            }
+            if (timer.html.classList.contains("ending")) {
+                timer.html.classList.remove("ending");
+            }
+            manipulateTimersInLocalStorage("edit", timer)
+            updateTimerDisplay(timer)
+            startGlobalTimer()
+    })
     // Add event listeners for the buttons
     timerBar.querySelector(".timer-group").addEventListener("click", () => {
         const timerGroupNumber = parseInt(timer.group, 10);
@@ -298,15 +356,9 @@ function createTimerBar(timer, newTimer) {
         // Handle delete button click
         li.remove(); // Remove the entire timer bar
         // Remove the timer from activeTimers
-        let index = activeTimers.findIndex(timer => timer.id === timer.id);
-        if (index !== -1) {
-            activeTimers.splice(index, 1);
-        } else if (index === -1) {
-            index = inactiveTimers.findIndex(timer => timer.id === timer.id);
-            if (index !== -1) {
-                inactiveTimers.splice(index, 1)
-            }
-        }
+        activeTimers = activeTimers.filter((t) => t.id !== timer.id);
+        // Remove the timer from inactiveTimers
+        inactiveTimers = inactiveTimers.filter((t) => t.id !== timer.id);
 
         manipulateTimersInLocalStorage('delete', timer)
         updateTimerOrderInLocalStorage()
