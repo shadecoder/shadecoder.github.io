@@ -35,6 +35,64 @@ function getFromLocalStorage(key) {
   }
   return [];
 }
+  
+  function exportLocalStorage() {
+    const jsonString = JSON.stringify(localStorage);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+  
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timers.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+
+  function importLocalStorage(fileInput) {
+    const file = fileInput.files[0];
+  
+    if (file) {
+      const reader = new FileReader();
+  
+      reader.onload = function (e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          // Clear current localStorage
+          localStorage.clear();
+          // Import the entire localStorage
+          Object.assign(localStorage, importedData);
+          // Reload the page to apply changes
+          location.reload();
+        } catch (error) {
+          console.error('Error parsing JSON file:', error);
+        }
+      };
+  
+      reader.readAsText(file);
+    }
+  }
+  
+  // Usage
+  const importButton = document.querySelector('.import');
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.json';
+  fileInput.style.display = 'none';
+  
+  importButton.addEventListener('click', () => {
+    fileInput.click();
+  });
+  
+  fileInput.addEventListener('change', () => {
+    importLocalStorage(fileInput);
+  });
+
+const exportButton = document.querySelector('.export');
+
+exportButton.addEventListener('click', exportLocalStorage);
 
 // Initialize timers from localStorage on app load
 function initializeTimersFromLocalStorage() {
@@ -304,10 +362,12 @@ function createTimerBar(timer, newTimer) {
             // Add it to the activeTimers list
             activeTimers.push(timer);
         }
+        else if (timer.html.classList.contains("ending")) {
+            timer.html.classList.remove("ending");
+        }
         manipulateTimersInLocalStorage("edit", timer)
         updateTimerDisplay(timer)
         startGlobalTimer()
-
     })
 
     const groupNumber = timerBar.querySelector(".timer-group span");

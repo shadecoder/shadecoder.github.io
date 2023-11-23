@@ -359,8 +359,11 @@ background-color: transparent;
 }
 
 .groups-panel-content {
+    position: relative;
     color: transparent;
     height: 0;
+    align-items: center;
+    text-align: center;
     overflow: hidden;
     transition: height 150ms ease-in-out;
 }
@@ -396,6 +399,35 @@ background-color: transparent;
 .arrow.expanded {
     transform: rotate(-135deg);
     margin-top: 5px;
+}
+
+.data-buttons {
+    margin-top: 15px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    align-items: center;
+    text-align: center;
+}
+
+.data-button {
+    height: 30px;
+    width: 120px;
+    background-color: #444555;
+    text-align: center;
+    font-weight: bold;
+    line-height: 28px;
+    border: 2px solid #5B5C71;
+    color: #d9d9d9;
+    transition: border-color 0.3s ease;
+}
+
+.data-button:hover {
+    border-color: #777888;
+}
+
+.import {
+    margin-bottom: 5px;
 }
 
 @keyframes harvest-flash {
