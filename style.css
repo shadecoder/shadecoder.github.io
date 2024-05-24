@@ -49,7 +49,7 @@ ul li{
     position: relative;
     display: inline-block;
     margin: 0 10px;
-    width: 440px;
+    width: 350px;
     background-color: #353b48;
     height: 30px;
     overflow: hidden;
@@ -160,8 +160,13 @@ ul li{
 }
 
 .timer .timer-group{
-    margin-right: 30px;
+    width: 150px;
+    font-size: 18px;
 }
+
+[contenteditable] {
+    outline: 0px solid transparent;
+  }
 
 .delete{
     color: #000;

@@ -271,7 +271,7 @@ function formatTime(totalSeconds) {
 const timerGroups = [1, 2, 3];
 
 // Initialize the current group index
-let currentGroupNumber = 1;
+let currentGroupNumber = 'Default';
 
 //dragging 
 let dragging = false
@@ -309,7 +309,7 @@ function createTimerBar(timer, newTimer) {
     timerBar.classList.add("timer", timer.class);
     timerBar.id = timer.id;
     //
-    timerBar.innerHTML = `<div class="button refresh-timer">${refreshIcon}</div><div class="bar"><div class="bar-content"><div class="button decrement-time">-</div><div class="time-remaining">${formatTime(timer.duration)}</div><div class="button increment-time">+</div></div><span></span></div></div><div class="button timer-group"><span>${timer.group}</span></div><div class="button delete">×</div>`;
+    timerBar.innerHTML = `<div class="button refresh-timer">${refreshIcon}</div><div class="bar"><div class="bar-content"><div class="button decrement-time">-</div><div class="time-remaining">${formatTime(timer.duration)}</div><div class="button increment-time">+</div></div><span></span></div></div><div class="button timer-group"><span contenteditable="true" spellcheck="false">${timer.group}</span></div><div class="button delete">×</div>`;
 
     //Store a reference to the .time-remaining element
     timer.remainingTimeElement = timerBar.querySelector(".time-remaining");
@@ -403,13 +403,30 @@ function createTimerBar(timer, newTimer) {
             startGlobalTimer()
     })
     // Add event listeners for the buttons
-    timerBar.querySelector(".timer-group").addEventListener("click", () => {
-        const timerGroupNumber = parseInt(timer.group, 10);
-        timer.group = (timerGroupNumber % 3) + 1;
-        groupNumber.textContent = timer.group;
-        currentGroupNumber = timer.group;
+    
+    timerBar.querySelector("[contenteditable]").addEventListener('blur', (event) => {
+        editedText = event.target.innerText.trim()
+        if(editedText == "") {
+            editedText = 'Default'
+            event.target.innerText = editedText
+        }
+        timer.group = editedText
         manipulateTimersInLocalStorage("edit", timer)
+    
+        //    const timerGroupNumber = parseInt(timer.group, 10);
+    //    timer.group = (timerGroupNumber % 3) + 1;
+    //    groupNumber.textContent = timer.group;
+    //    currentGroupNumber = timer.group;
+    //    manipulateTimersInLocalStorage("edit", timer)
     });
+    timerBar.querySelector("[contenteditable]").addEventListener('keydown', (event) => {
+        // Check if Enter key is pressed
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            // Remove focus from the editable element
+            event.target.blur();
+        }
+    })
 
     const deleteButton = timerBar.querySelector(".delete");
     deleteButton.addEventListener("click", () => {
